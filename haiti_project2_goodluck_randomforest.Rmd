@@ -1,0 +1,67 @@
+---
+title: "Project2"
+author: "Gladies Huilin"
+date: "4/19/2020"
+output: word_document
+---
+
+```{r}
+library(MASS)
+library(dplyr)
+library(ggplot2)
+library(caret)
+library(nnet)
+dataset<-read.table("HaitiPixels_good.txt", header=TRUE, sep= "" )
+dim(dataset)
+dataset
+```
+
+```{r}
+library(caTools)
+set.seed(3000)
+smp_siz = floor(0.75*nrow(dataset))
+smp_siz
+```
+
+```{r}
+set.seed(123)  
+train_ind = sample(seq_len(nrow(dataset)),size = smp_siz) 
+Train =dataset[train_ind,] 
+Test=dataset[-train_ind,] 
+```
+https://rstudio-pubs-static.s3.amazonaws.com/71575_4068e2e6dc3d46a785ad7886426c37db.html
+
+```{r}
+memory.limit()
+```
+
+```{r}
+memory.limit(size=15000)
+```
+
+
+```{r}
+library(randomForest)
+haitiForest <- randomForest(Type ~ Red + Green + Blue, data = Train, nodesize = 25, ntree = 100)
+```
+```{r}
+Train$Type <- as.factor(Train$Type)
+Test$Type <- as.factor(Test$Type)
+haitiForest <- randomForest(Type ~ Red + Green + Blue, data = Train, nodesize = 25, ntree = 100)
+predictForest <- predict(haitiForest, newdata = Test)
+table(Test$Type, predictForest)
+```
+
+```{r}
+library(caret)
+library(e1071)
+numFolds <- trainControl(method = "cv", number = 10)
+```
+
+```{r}
+cpGrid <- expand.grid(.cp = seq(0.01, 0.5, 0.01))
+train(Type ~ Red + Green + Blue, data = Train, method = "rpart", trControl = numFolds, tuneGrid = cpGrid)
+```
+https://rstudio-pubs-static.s3.amazonaws.com/71575_4068e2e6dc3d46a785ad7886426c37db.html
+
+

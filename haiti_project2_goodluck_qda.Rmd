@@ -1,0 +1,80 @@
+---
+title: "Project2"
+author: "Gladies Huilin"
+date: "4/19/2020"
+output: word_document
+---
+
+```{r}
+library(MASS)
+library(dplyr)
+library(ggplot2)
+library(caret)
+library(nnet)
+dataset<-read.table("HaitiPixels_good.txt", header=TRUE, sep= "" )
+dim(dataset)
+dataset
+```
+hold-out
+```{r}
+library(caret)
+library(mlbench)
+```
+```{r}
+set.seed(2020)
+in_train <- createDataPartition(dataset$Type, p = 4/5, list = FALSE)
+training <- dataset[ in_train,]
+training <- dataset[ in_train,]
+```
+
+
+```{r}
+qda_fit <- train(Type ~ ., data = training, method = "qda")
+qda_fit
+```
+
+```{r}
+qda_fit
+confusionMatrix(qda_fit)
+# generate predictions on hold back data
+trainPredicted <- predict(qda_fit,Test)
+# generate confusion matrix for hold back data
+confusionMatrix(trainPredicted,reference=Test$Type)
+```
+CV
+```{r}
+set.seed(123)  
+train_ind = sample(seq_len(nrow(dataset)),size = smp_siz) 
+Train =dataset[train_ind,] 
+Test=dataset[-train_ind,] 
+```
+
+```{r}
+qda.fit = train(Type~ ., data=Train, method="qda",
+                trControl = trainControl(method = "cv"))
+```
+
+```{r}
+qda.fit
+```
+
+```{r}
+pred.Type = predict(qda.fit, Test)
+```
+
+```{r}
+table(pred.Type, Test$Type)
+```
+
+```{r}
+# plot of original species from test-set:
+qplot(Blue, Green, data=Test, cex=2, col=Type)
+```
+
+
+```{r}
+Test$pred.right = pred.Type == Test$Type
+
+qplot(Blue, Green, data=Test, cex=2, col=pred.right)
+```
+

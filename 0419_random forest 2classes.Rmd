@@ -1,0 +1,70 @@
+---
+title: "0226_KNN_TWOclasses"
+author: "HuiLin Chang, Gladies"
+date: "2/26/2020"
+output: word_document
+---
+
+
+```{r}
+library(MASS)
+library(dplyr)
+library(ggplot2)
+library(caret)
+library(nnet)
+dataset<-read.csv("HaitiPixels.csv", header=TRUE, sep= "," )
+dim(dataset)
+```
+ 
+```{r}
+# combine class - to blue to non-bluetarp
+data1<-dataset
+data1$Class <- trimws(data1$Class)  
+data1$Class <-gsub('Vegetation', 'not_blue', data1$Class) 
+data1$Class <-gsub('Rooftop', 'not_blue', data1$Class) 
+data1$Class <-gsub('Soil', 'not_blue', data1$Class) 
+data1$Class <-gsub('Various Non-Tarp', 'not_blue', data1$Class) 
+data1$Class <-gsub('Blue Tarp', 'blue', data1$Class) 
+data1$Class <-as.factor(data1$Class) 
+#contrasts(Class)
+attach(data1)
+data<-data1
+```
+ 
+```{r}
+library(caret)
+```
+```{r}
+set.seed(2020)
+#Spliting data as training and test set. Using createDataPartition() function from caret
+indxTrain <- createDataPartition(y = data$Class,p = 0.80,list = FALSE)
+training <- data[indxTrain,]
+testing <- data[-indxTrain,]
+
+#Checking distibution in origanl data and partitioned data
+prop.table(table(training$Class)) * 100
+```
+ 
+```{r}
+prop.table(table(testing$Class)) * 100
+```
+ 
+```{r}
+prop.table(table(data$Class)) * 100
+```
+```{r}
+ind <- sample(2,nrow(data),replace=TRUE,prob=c(0.7,0.3))
+trainData <- data[ind==1,]
+testData <- data[ind==2,]
+```
+
+```{r}
+library(randomForest)
+```
+
+```{r}
+data_rf <- randomForest(Class~.,data=trainData,ntree=100,proximity=TRUE)
+table(predict(data_rf),trainData$Species)
+```
+ 
+ 
